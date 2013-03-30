@@ -1,8 +1,15 @@
+
+
+
 ######
-Exitwp
+Exitwp - For Hyde
 ######
 
-Exitwp is tool for making migration from one or more wordpress blogs to the `jekyll blog engine <https://github.com/mojombo/jekyll/>`_ as easy as possible.
+This is my fork of thomasf's exitwp - https://github.com/thomasf/exitwp that keeps the URL structure.  borismus also has a fork, but it was missing a couple of years of progress on thomasf's https://github.com/borismus/exitwp
+
+
+
+Exitwp is tool for making migration from one or more wordpress blogs to the hyde blog engine as easy as possible.
 
 By default it will try to convert as much information as possible from wordpress but can also be told to filter the amount of data it converts.
 
