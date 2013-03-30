@@ -16,7 +16,7 @@ from html2text import html2text_file
 '''
 exitwp - Wordpress xml exports to Jekykll blog format conversion
 
-Tested with Wordpress 3.3.1 and jekyll 0.11.2
+Tested with Wordpress 3.3.1 and hyde 0.11.2
 
 '''
 ######################################################
@@ -98,7 +98,7 @@ def parse_wp_xml(file):
                     tag = q
                 try:
                     result = i.find(ns[namespace] + tag).text
-                    print result
+                    #print result
                 except AttributeError:
                     result = "No Content Found"
                 if unicode_wrap:
@@ -107,7 +107,6 @@ def parse_wp_xml(file):
 
             body = gi('content:encoded')
             for key in body_replace:
-                # body = body.replace(key, body_replace[key])
                 body = re.sub(key, body_replace[key], body)
 
             img_srcs = []
@@ -145,13 +144,13 @@ def parse_wp_xml(file):
     }
 
 
-def write_jekyll(data, target_format):
+def write_hyde(data, target_format):
 
     sys.stdout.write("writing")
     item_uids = {}
     attachments = {}
 
-    def get_blog_path(data, path_infix='jekyll'):
+    def get_blog_path(data, path_infix='hyde'):
         name = data['header']['link']
         name = re.sub('^https?', '', name)
         name = re.sub('[^A-Za-z0-9_.-]', '', name)
@@ -166,6 +165,9 @@ def write_jekyll(data, target_format):
         return full_dir
 
     def open_file(file):
+        directory = os.path.dirname(file)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         f = codecs.open(file, 'w', encoding='utf-8')
         return f
 
@@ -180,8 +182,7 @@ def write_jekyll(data, target_format):
             uid = []
             if (date_prefix):
                 dt = datetime.strptime(item['date'], date_fmt)
-                uid.append(dt.strftime('%Y-%m-%d'))
-                uid.append('-')
+                uid.append(dt.strftime('%Y/%m/%d/'))
             s_title = item['slug']
             if s_title is None or s_title == '':
                 s_title = item['title']
@@ -190,6 +191,7 @@ def write_jekyll(data, target_format):
             s_title = s_title.replace(' ', '_')
             s_title = re.sub('[^a-zA-Z0-9_-]', '', s_title)
             uid.append(s_title)
+            uid.append('/index')
             fn = ''.join(uid)
             n = 1
             while fn in item_uids[namespace]:
@@ -257,7 +259,7 @@ def write_jekyll(data, target_format):
         out = None
         yaml_header = {
             'title': i['title'],
-            'date': datetime.strptime(i['date'], '%Y-%m-%d %H:%M:%S'),
+            'date': i['date'][0:10],
             'slug': i['slug'],
             'wordpress_id': int(i['wp_id']),
             'comments': i['comments'],
@@ -267,9 +269,9 @@ def write_jekyll(data, target_format):
 
         if i['type'] == 'post':
             i['uid'] = get_item_uid(i, date_prefix=True)
-            fn = get_item_path(i, dir='_posts')
+            fn = get_item_path(i, dir='content')
             out = open_file(fn)
-            yaml_header['layout'] = 'post'
+            #yaml_header['layout'] = 'post'
         elif i['type'] == 'page':
             i['uid'] = get_item_uid(i)
             # Chase down parent path, if any
@@ -283,7 +285,7 @@ def write_jekyll(data, target_format):
                     break
             fn = get_item_path(i, parentpath)
             out = open_file(fn)
-            yaml_header['layout'] = 'page'
+            #yaml_header['layout'] = 'page'
         elif i['type'] in item_type_filter:
             pass
         else:
@@ -330,6 +332,6 @@ def write_jekyll(data, target_format):
 wp_exports = glob(wp_exports + '/*.xml')
 for wpe in wp_exports:
     data = parse_wp_xml(wpe)
-    write_jekyll(data, target_format)
+    write_hyde(data, target_format)
 
 print 'done'
